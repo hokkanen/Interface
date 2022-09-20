@@ -16,23 +16,18 @@ int main(int argc, char *argv []){
   devices::init();
 
   /* Declare pointers and allocate host memory */
-  int *h_array, count = 10;
-  h_array = (int*) malloc(count * sizeof(int));
-
-  /* Create instance of unified data class that
-   * emulates unified memory behavior without 
-   * requiring support for unified memory */
-  devices::Udata<int> array(h_array, count * sizeof(int)); 
+  int *array, count = 10;
+  
+  /* Allocate Unified Memory,
+   * the standard malloc function is called
+   * if running on host only */
+  array = (int*) devices::allocate(count * sizeof(int));
 
   /* Initialize data from the host using
    * the standard syntax (ptr[index] = x) */
   for(uint i = 0; i < count; ++i){
     array[i] = i;
   }
-
-  /* Sync data to device, this call
-   * does nothing if no devices are present */
-  array.syncDeviceData();
 
   /* Run a parallel for loop on the 
    * host or on a device depending on
@@ -55,6 +50,11 @@ int main(int argc, char *argv []){
       }
     }
   );
+
+  /* Free the Unified Memory allocation,
+   * the standard free function is called
+   * if running on host only */
+  devices::free(array);
 
   return 0;
 }

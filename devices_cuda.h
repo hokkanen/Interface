@@ -13,51 +13,19 @@ inline static void cuda_error(cudaError_t err, const char *file, int line) {
 
 namespace devices
 {
-  template <typename T> 
-  class Udata {
-
-    private:
-    
-    T *ptr; 
-    T *d_ptr;
-    uint bytes;
-    uint is_copy = 0;
-  
-    public:   
-  
-    __forceinline__ void syncDeviceData(void){
-      CUDA_ERR(cudaMemcpy(d_ptr, ptr, bytes, cudaMemcpyHostToDevice));
-    }
-  
-    __forceinline__ void syncHostData(void){
-      CUDA_ERR(cudaMemcpy(ptr, d_ptr, bytes, cudaMemcpyDeviceToHost));
-    }
-  
-    Udata(T *_ptr, uint _bytes) : ptr(_ptr), bytes(_bytes) {
-      CUDA_ERR(cudaMalloc(&d_ptr, bytes));
-      CUDA_ERR(cudaMemcpy(d_ptr, ptr, bytes, cudaMemcpyHostToDevice));
-    }
-    
-    __host__ __device__ Udata(const Udata& u) : 
-      ptr(u.ptr), d_ptr(u.d_ptr), bytes(u.bytes), is_copy(1) {}
-  
-    __host__ __device__ ~Udata(void){
-      if(!is_copy)
-        cudaFree(d_ptr);
-    }
-  
-    __forceinline__ __host__ __device__ T &operator [] (uint i) const {
-     #ifdef __CUDA_ARCH__
-        return d_ptr[i];
-     #else
-        return ptr[i];
-     #endif
-    }
-  };
-  
   __forceinline__ static void init() {
     int device_id = 0;
     CUDA_ERR(cudaSetDevice(device_id));
+  }
+
+  __forceinline__ static void* allocate(size_t bytes) {
+    void* ptr;
+    CUDA_ERR(cudaMallocManaged(&ptr, bytes));
+    return ptr;
+  }
+
+  __forceinline__ static void free(void* ptr) {
+    CUDA_ERR(cudaFree(ptr));
   }
   
   template <typename LambdaBody> 
