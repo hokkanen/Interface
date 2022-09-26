@@ -1,3 +1,5 @@
+#include <chrono>
+#include <iostream>
 #include <stdio.h>
 
 /* HAVE_DEF is set during compile time
@@ -21,7 +23,10 @@ int main(int argc, char *argv []){
   int *array;
 
   /* Set the problem size and the number of dummy increments */
-  uint n_array = 10, n_inc = 1000;
+  uint n_array = 1e1, n_inc = 1e4;
+
+  /* Begin timer */
+  auto begin = std::chrono::steady_clock::now();
   
  /* Run a dummy increment loop to demonstrate
   * the performnace impact caused by recurring 
@@ -49,7 +54,7 @@ int main(int argc, char *argv []){
     );
   
     /* For the last increment, check the results
-     * by running run a different parallel for 
+     * by running a different parallel for 
      * loop on the host or on a device depending 
      * on the chosen compile configuration */
     if(inc == n_inc - 1){
@@ -69,6 +74,10 @@ int main(int argc, char *argv []){
      * if running on host only */
     devices::free(array);
   }
+
+  /* Print timing */
+  std::cout << std::chrono::duration_cast<std::chrono::milliseconds>
+    (std::chrono::steady_clock::now() - begin).count() << "[ms]" << std::endl;
 
   return 0;
 }
