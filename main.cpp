@@ -19,11 +19,11 @@ int main(int argc, char *argv []){
    * only required for GPU devices */
   devices::init();
 
-  /* Declare pointer and allocate host memory */
-  int *array;
-
   /* Set the problem size and the number of dummy increments */
   uint n_array = 1e1, n_inc = 1e4;
+
+  /* Declare pointer*/
+  int *array;
 
   /* Begin timer */
   auto begin = std::chrono::steady_clock::now();
